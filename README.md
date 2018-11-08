@@ -1,6 +1,6 @@
 # Testing in react
 This is the workshop code repository to house all the code snippets and application to be used
-during the *Testing in react* workshop I will be running.
+during the **Testing in react** workshop I will be running.
 
 ## Table of content
 We have organised the content on the workshop into the chapters below.
@@ -20,7 +20,7 @@ To access the code for specific chapter run:
   git checkout [branch-name]
 ```
 
-Example: Running the *Chapter: Why we test*
+Example: Running the **Chapter: Why we test**
 
 ```
   git checkout why-we-test
