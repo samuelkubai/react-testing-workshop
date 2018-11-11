@@ -2,9 +2,25 @@ import React, { Component } from 'react';
 import './UserProfile.css';
 
 export default class UserProfile extends Component {
+  renderBadge(manager) {
+    if (manager) {
+      return (
+        <div className="badge badge--manager">
+          Manager
+        </div>
+      );
+    }
+
+    return (
+      <div className="badge">
+        Not manager
+      </div>
+    );
+  }
+
   render () {
     const { user } = this.props;
-    const { image, name, title, department } = user;
+    const { image, name, title, department, manager } = user;
 
     return (
       <div className="user__profile">
@@ -19,6 +35,7 @@ export default class UserProfile extends Component {
           <div className="user__info">
             {`${title} - ${department}`}
           </div>
+          {this.renderBadge(manager)}
         </div>
       </div>
     );
