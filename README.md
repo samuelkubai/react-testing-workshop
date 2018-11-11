@@ -1,37 +1,29 @@
-# Chapter: Snapshot testing 
-Snapshots are a type of assertion introduce by _jest_ to act as a form of a visual assertion,
-snaphots create an acceptable copy of html from a specific state and compare the rest of
-future renders on the same state with that snapshot and thus ensure that the html
-produce at a given state is the same and any updates are explicity done.
+# Chapter: Mocking functions 
+To test components in isolation you most of the time require to mock out the functions which
+this components depend on to have the component not rely on the consumer of the component
+and gurantee that if the API contract of the component is kept everything will work just as
+expected.
 
+To have your component easily mockable though you need to achieve almost **pure functions**; by
+pure function we mean you component given the same inputs should consistently produce the same
+outputs and not require something in it's environment to function properly, nor should it
+touch the environment it is placed in. Achieving this pure function status makes a components
+mocking almost trivial.
 
-Key things to remember with snaphots:
-1. Always push them to your version control repositories. 
-
-The reason for this is that the other contributors of the team need to ensure they have not
-changed the structure of the html when adding any new modifications to the code and
-explicitly allow any changes if that was an expected outcome of their modification.
-
-2. Mainly use mount for snapshots.
-
-The reason for this is you need to compare the structure of HTML produced when you render
-the component in the browser and _mount_ will give you the HTML equal to the one we
-expect to render on the browser.
-
-You can assert that various facets of your component or collection of components has been
-rendered by explicitly finding the element with it's identifier, but this cannot assure
-that the location/placement of the element is where you intended for it to be.
-
-For that use snapshots.
+> Not all components can achieve the pure function status though and they can be mocked too
 
 ### Example
-In the example below we have a component which readly renders the user profile information of
-user taking in a user object as a prop and rendering the correct details for the user. We
-have added a manager badge to be rendered if the user is a manager or not.
+The component below receives a redirect callback function that is called any time the user
+clicks on the image to be redirected to where the image should redirect to. The component
+here has clearly stated that it's scope does not include handling the logic of  the image
+redirect.
 
 **User profile component**
 
 ```javascript
+import React, { Component } from 'react';
+import './UserProfile.css';
+
 export default class UserProfile extends Component {
   renderBadge(manager) {
     if (manager) {
@@ -51,11 +43,11 @@ export default class UserProfile extends Component {
 
   render () {
     const { user } = this.props;
-    const { image, name, title, department, manager } = user;
+    const { image, name, title, department, manager, imageRedirect } = user;
 
     return (
       <div className="user__profile">
-        <div className="user__image">
+        <div className="user__image" onClick={imageRedirect}>
           <img src={image} />
         </div>
 
@@ -73,28 +65,42 @@ export default class UserProfile extends Component {
   }
 }
 ```
-
-To test that the manager badge is rendered and shows the correct text we can explicitly look for
-the badge and it's text, but to ascertain that the component is always rendered in the right
-position we use snapshots for that.
+To test the function and ensure the function is called when the right event occurs you can easily
+use the `jest.fn()` implementation of function mockups. This function will be able to inform you
+how many times it was called and the arguments used to call it.
 
 ```javascript
-it('it renders the manager badge correctly', () => {
+import React from 'react';
+import { mount } from 'enzyme';
+import UserProfile from './UserProfile';
+
+const imageRedirect = jest.fn();
+
+function generateUser (overrides) {
+  return {
+    image: '',
+    name: 'Samuel Kubai Kamau',
+    manager: true,
+    title: 'Technical Team Lead',
+    department: 'Talent Development Department',
+    imageRedirect,
+    ...overrides
+  };
+}
+
+
+it('it calls the image render function when clicked', () => {
   // Create world
-  const user = generateUser({ manager: true });
+  const user = generateUser();
   const wrapper = mount(<UserProfile user={user} ></UserProfile>);
 
   // Simulate user activity
-  // N/A 
+  wrapper.find('img').simulate('click');
 
   // Make assertions
-  // 1, Ensure the right badge is shown
-  expect(wrapper.find('.badge--manager').length).toBe(1);
-  expect(wrapper.find('.badge--manager').text()).toEqual("Manager");
-
-  // Ensure the composition of the whole page is what we intend
-  expect(wrapper).toMatchSnapshot();
+  expect(imageRedirect.mock.calls.length).toBe(1);
 });
+
 ```
 
 In our test any change to the location of anything of the page whether intentional or accidental

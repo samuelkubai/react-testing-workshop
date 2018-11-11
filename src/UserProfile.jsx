@@ -20,11 +20,11 @@ export default class UserProfile extends Component {
 
   render () {
     const { user } = this.props;
-    const { image, name, title, department, manager } = user;
+    const { image, name, title, department, manager, imageRedirect } = user;
 
     return (
       <div className="user__profile">
-        <div className="user__image">
+        <div className="user__image" onClick={imageRedirect}>
           <img src={image} />
         </div>
 

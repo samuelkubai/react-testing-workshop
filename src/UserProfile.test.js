@@ -2,12 +2,16 @@ import React from 'react';
 import { mount } from 'enzyme';
 import UserProfile from './UserProfile';
 
+const imageRedirect = jest.fn();
+
 function generateUser (overrides) {
   return {
     image: '',
     name: 'Samuel Kubai Kamau',
+    manager: true,
     title: 'Technical Team Lead',
     department: 'Talent Development Department',
+    imageRedirect,
     ...overrides
   };
 }
@@ -51,5 +55,17 @@ it('it renders the none manager correctly', () => {
 
   // Make assertions
   expect(wrapper).toMatchSnapshot();
+});
+
+it('it calls the image render function when clicked', () => {
+  // Create world
+  const user = generateUser();
+  const wrapper = mount(<UserProfile user={user} ></UserProfile>);
+
+  // Simulate user activity
+  wrapper.find('img').simulate('click');
+
+  // Make assertions
+  expect(imageRedirect.mock.calls.length).toBe(1);
 });
 
