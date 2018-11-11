@@ -1,10 +1,16 @@
 import React, { Component } from 'react';
-import ToggleButton from './ToggleButton';
+import UserProfile from './UserProfile';
 
 class App extends Component {
   render() {
+    const user = {
+      name: 'Samuel Kubai Kamau',
+      title: 'Technical Team Lead',
+      department: 'Talent Development Department'
+    }
+
     return (
-      <ToggleButton></ToggleButton>
+      <UserProfile user={user}></UserProfile>
     );
   }
 }

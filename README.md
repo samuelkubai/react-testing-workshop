@@ -1,104 +1,90 @@
-# Chapter: What we test
-When testing it is much more effective to test use cases rather than implementation 
-details of the component in question.
+# Chapter: Using object factories
+When testing in React you will most definitely find yourself building components or making
+API calls with some form of JSON object, e.g. composing the fields you need to create
+a new post or comment.
 
-The search of _100%_ test converage can sometimes lead various developers to test
-implementation details over finding what ever use cases the implementation in
-question is used for.
-
-Testing the implementation details of a component only leads to writing brittle
-tests on your application, which every simple refactor run just ends up
-needing you to alter the code's tests again.
-
-To test the right things we should always remember why we test in the first place:
-
-1. To attain a level of confidence in the code being added to the larger whole and 
-assert that none of the existing functionality in the larger whole is broken.
-
-2. Secure the code we write at any given point in time amd avoid any regression bugs from
-new code added to the codebase after this modification.
+However, creating this objects for individual components' tests leads to not easy to read
+and even hard maintance of the code test suite you leave behind.
 
 ### Example
-The implementation below is of a button that when clicked changes color from white to blue and
-vice versa. There are two ways to go about testing this button.
+In the example below we have a component which readly renders the user profile information of
+user taking in a user object as a prop and rendering the correct details for the user.
 
-**Button Component**
-Here is the button component code
+**User profile component**
 
 ```javascript
 import React, { Component } from 'react';
+import './UserProfile.css';
 
-export default class ToggleButton extends Component {
-  state = {
-    active: false
-  }
-
-  renderStyles = () => {
-    return {
-      backgroundColor: this.state.active ? 'blue' : 'white',
-      color: this.state.active ? 'white' : 'blue'
-    }
-  }
-
-  toggleButton = () => {
-    this.setState((oldState) => {
-      return {...oldState, active: !oldState.active}
-    })
-  }
-
+export default class UserProfile extends Component {
   render () {
+    const { user } = this.props;
+    const { image, name, title, department } = user;
+
     return (
-      <button 
-        style={this.renderStyles()}
-        onClick={this.toggleButton}
-      >
-        Toggle me 
-      </button>
-    )
-  }  
+      <div className="user__profile">
+        <div className="user__image">
+          <img src={image} />
+        </div>
+
+        <div className="user__info">
+          <div className="user__name">
+            {name}
+          </div>
+          <div className="user__info">
+            {`${title} - ${department}`}
+          </div>
+        </div>
+      </div>
+    );
+  }
 }
 ```
+To test the component above we would need to pass in a user object in our test file, but we need
+to think this through further, we need a `Factory` to generate the user object for our tests
+and future tests. Considerations of building a factory should be:
 
-We can
+1. Are there any overrides we need to allow for our tests or future tests?
+2. Are there options we need to avail to build the object correctly?
 
-1. Test that the state is changed correctly once the button is pressed.
+For our case:
 
-2. Test that when a user presses on the button the correct class is toggled on the button.
+1. We need to allow overrides
+2. We require no extra options in building our user factory for now
 
 ```javascript
 import React from 'react';
 import { mount } from 'enzyme';
-import ToggleButton from './ToggleButton';
+import UserProfile from './UserProfile';
 
-it('it toggles the button correctly', () => {
+function generateUser (overrides) {
+  return {
+    image: '',
+    name: 'Samuel Kubai Kamau',
+    title: 'Technical Team Lead',
+    department: 'Talent Development Department',
+    ...overrides
+  };
+}
+
+it('it renders the user component correctly', () => {
   // Create world
-  const wrapper = mount(<ToggleButton></ToggleButton>);
+  const user = generateUser();
+  const wrapper = mount(<UserProfile user={user} ></UserProfile>);
 
   // Simulate user activity
-  wrapper.find('button').simulate('click');
+  // N/A 
 
-  // 1. Testing implementation details
-  expect(wrapper.state().active).toEqual(true);
-
-
-  // 2. Test the from the user's perspective
+  // Make assertions
   expect(wrapper).toMatchSnapshot();
 });
+
 ```
 
-From the example above changing the `state` variable `active` to `toggled` would break
-the tests although essentially the button still works as expected from the user's
-perspective.
+In our test above any changes to the user object can be easily change on one section of our code
+and be tested against all the components that use this utility in a matter of minutes.
 
+> This object factories should in most cases be extracted to their own files to allow for easier code reuse
 
 ### Exercise
-Fix the test below and cover for user cases rather than covering for implementation details.
 
-**Exercise template**
-
-```javascript
-var math = require("./math.js");
-
-// Throw an error on a fail
-// E.g. throw new Error("Math does not cover for strings as arguments");
-```
